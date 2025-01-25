@@ -84,40 +84,29 @@ if uploaded_file is not None:
         st.pyplot(plt)
 
 
-        #Prediction Section
-        st.subheader("Make a Prediction")
-        #Get Feature Names (this needs adjustment based on your data)
-        feature_names = list(pd.read_csv(uploaded_file).columns)
-        feature_names.remove('class')
-        input_data = {}
-        for feature in feature_names:
-            if pd.read_csv(uploaded_file)[feature].dtype == 'object':
-                unique_values = pd.read_csv(uploaded_file)[feature].unique()
-                input_data[feature] = st.selectbox(f"{feature} (categorical)", unique_values)
-            else:
-                input_data[feature] = st.number_input(f"{feature} (numeric)", value=0.0)
+        # Prediction section
+st.subheader("Make a Prediction")
+input_data = {}
 
+if pipeline is not None and df is not None:
+    feature_names = df.columns.tolist()
+    feature_names.remove('class')
 
-        if st.button("Predict"):
-            input_df = pd.DataFrame([input_data])
-            prediction = pipeline.predict(input_df)[0]
+    for feature in feature_names:
+        if pd.api.types.is_numeric_dtype(df[feature]):
+            input_data[feature] = st.number_input(f"{feature} (numeric)", value=0.0)
+        else:
+            unique_values = df[feature].unique()
+            input_data[feature] = st.selectbox(f"{feature} (categorical)", unique_values)
+
+    if st.button("Predict"):
+        input_df = pd.DataFrame([input_data])
+        try:
+            # PREPROCESS THE INPUT DATA BEFORE PREDICTION!!!
+            input_df_processed = pipeline['preprocessor'].transform(input_df)
+            prediction = pipeline.predict(input_df_processed)[0] #Predict on processed data
             st.write(f"Prediction: {prediction}")
-
-        #Save and Load Model Section
-        if st.button("Save Model"):
-            joblib.dump(pipeline, 'mushroom_model.pkl')
-            st.write("Model saved as mushroom_model.pkl")
-
-        if st.button("Load Model"):
-            try:
-                loaded_pipeline = joblib.load('mushroom_model.pkl')
-                st.write("Model loaded successfully!")
-                # You can use the loaded_pipeline for prediction here, if needed.
-            except FileNotFoundError:
-                st.write("Model file not found. Please save a model first.")
-
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
-
+        except Exception as e:
+            st.error(f"Prediction Error: {e}")
 else:
-    st.info("Awaiting for mushrooms.csv file to be uploaded.")
+    st.warning("Please upload a CSV file to train the model before making a prediction.")
