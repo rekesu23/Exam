@@ -13,39 +13,38 @@ import joblib #for saving and loading model
 
 # --- Data Loading and Preprocessing ---
 @st.cache_data
-def load_and_preprocess_data(df): #Only df is passed now
+def load_and_preprocess_data(df):
     try:
         # Separate features (X) and target (y)
         X = df.drop(columns=['class'])
         y = df['class']
 
-    # Create a column transformer for preprocessing
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ('num', StandardScaler(), X.select_dtypes(include=np.number).columns),
-            ('cat', OneHotEncoder(), X.select_dtypes(include=['object', 'category']).columns)
+        # Create a column transformer for preprocessing - This is now inside try
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', StandardScaler(), X.select_dtypes(include=np.number).columns),
+                ('cat', OneHotEncoder(), X.select_dtypes(include=['object', 'category']).columns)
+            ])
+
+        # Create a pipeline with preprocessing and model - This is now inside try
+        pipeline = Pipeline([
+            ('preprocessor', preprocessor),
+            ('classifier', RandomForestClassifier(random_state=42))
         ])
 
-    # Create a pipeline with preprocessing and model
-    pipeline = Pipeline([
-        ('preprocessor', preprocessor),
-        ('classifier', RandomForestClassifier(random_state=42)) #You can change classifier here.
-    ])
+        # Split data - This is now inside try
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Split data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        # Train the model - This is now inside try
+        pipeline.fit(X_train, y_train)
 
-    #Train the model
-    pipeline.fit(X_train, y_train)
-
-    #Evaluate the model
-    y_pred = pipeline.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    cm = confusion_matrix(y_test, y_pred)
-    fpr, tpr, _ = roc_curve(y_test, pipeline.predict_proba(X_test)[:, 1])
-    roc_auc = auc(fpr, tpr)
-
-     return pipeline, accuracy, cm, fpr, tpr, roc_auc
+        # Evaluate the model - This is now inside try
+        y_pred = pipeline.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        cm = confusion_matrix(y_test, y_pred)
+        fpr, tpr, _ = roc_curve(y_test, pipeline.predict_proba(X_test)[:, 1])
+        roc_auc = auc(fpr, tpr)
+        return pipeline, accuracy, cm, fpr, tpr, roc_auc
 
     except Exception as e:
         print(f"Error in load_and_preprocess_data: {e}")
