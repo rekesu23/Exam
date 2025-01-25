@@ -16,14 +16,17 @@ import joblib
 def load_and_preprocess_data(filepath):
     try:
         df = pd.read_csv(filepath)
-        print("DataFrame shape:", df.shape)
-        print("Column names:", df.columns)
-        X = df.drop(columns=['class'])
-        y = df['class'].map({'e': 0, 'p': 1})  #Convert to numerical
-        return X, y #Return X and y directly
+        # ... (your preprocessing code) ...
+        pipeline.fit(X_train, y_train)
+        y_pred = pipeline.predict(X_test)
+        accuracy = accuracy_score(y_test, y_pred)
+        cm = confusion_matrix(y_test, y_pred)
+        fpr, tpr, _ = roc_curve(y_test, pipeline.predict_proba(X_test)[:, 1])
+        roc_auc = auc(fpr, tpr)
+        return pipeline, accuracy, cm, fpr, tpr, roc_auc
     except Exception as e:
-        print(f"Error: {e}")
-        return None, None
+        print(f"Error in load_and_preprocess_data: {e}")
+        return None, None, None, None, None, None #Return None for all values if error
 
 # --- Streamlit App ---
 st.title("Mushroom Classification App")
@@ -34,10 +37,11 @@ pipeline = None  # Initialize pipeline outside the if block
 
 if uploaded_file is not None:
     try:
-        df = pd.read_csv(uploaded_file)
-        if df.empty:
-            st.error("Error: Uploaded CSV file is empty.")
-        else:
+        pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file)
+
+    if pipeline is None:  #Check for errors in preprocessing
+        st.error("An error occurred during data processing.  See console for details.")
+    else:
             # ... (preprocessing and model loading) ...
             pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file)
             # ... (displaying results) ...
