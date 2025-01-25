@@ -13,14 +13,11 @@ import joblib #for saving and loading model
 
 # --- Data Loading and Preprocessing ---
 @st.cache_data
-def load_and_preprocess_data(filepath):
-    df = pd.read_csv(filepath)
-
-    #Convert target variable to numerical:  Crucial change here!
-    df['class'] = df['class'].map({'e': 0, 'p': 1}) #'e'=edible, 'p'=poisonous
-
-    X = df.drop(columns=['class'])
-    y = df['class']
+def load_and_preprocess_data(df): #Only df is passed now
+    try:
+        # Separate features (X) and target (y)
+        X = df.drop(columns=['class'])
+        y = df['class']
 
     # Create a column transformer for preprocessing
     preprocessor = ColumnTransformer(
@@ -48,7 +45,12 @@ def load_and_preprocess_data(filepath):
     fpr, tpr, _ = roc_curve(y_test, pipeline.predict_proba(X_test)[:, 1])
     roc_auc = auc(fpr, tpr)
 
-    return pipeline, accuracy, cm, fpr, tpr, roc_auc
+     return pipeline, accuracy, cm, fpr, tpr, roc_auc
+
+    except Exception as e:
+        print(f"Error in load_and_preprocess_data: {e}")
+        st.error(f"An error occurred during data processing: {e}")
+        return None, None, None, None, None, None
 
 
 # --- Streamlit App ---
@@ -63,7 +65,7 @@ if uploaded_file is not None:
     try:
         df = pd.read_csv(uploaded_file)
         df['class'] = df['class'].map({'e': 0, 'p': 1})
-        pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file, df)
+        pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(df)
 
         if pipeline is not None:
             st.subheader("Model Performance")
