@@ -325,39 +325,57 @@ plt.title('ROC Curve')
 plt.legend(loc='lower right')
 plt.show()
 
-!pip install streamlit
 import streamlit as st
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier # Assuming rf model is RandomForest
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import StandardScaler
 
-# ... (Load your trained model, 'rf', here if it's not already loaded) ...
+# Load your trained model (make sure the model is pre-trained and saved)
+# You can load a model from a file if you have saved it, for example using joblib or pickle.
+# Example: rf = joblib.load('random_forest_model.pkl')
+# For simplicity, let's use a random forest classifier here directly.
 
-# Streamlit app interface
+# Assuming you already have the trained model `rf`
+# If you haven't trained it yet, you should train and save it first
+
+# Sample training data
+# X_train = <your training data here>
+# y_train = <your target data here>
+# rf = RandomForestClassifier()
+# rf.fit(X_train, y_train)
+
+# Sample features and model initialization for testing purposes
+# Normally, you would load your trained model here
+
 st.title("Mushroom Classification")
 st.write("Enter the features of the mushroom to predict whether it's edible or poisonous.")
 
-# Get all feature names from your training data (X_train)
-feature_names = X_train.columns
+# Create sample data for feature names (replace with your actual data)
+# This should be done based on your actual training data
+# Replace `X_train` with the actual data you trained the model on.
+feature_names = ['cap-shape', 'cap-color', 'bruises', 'odor']  # Replace with your actual feature names
+input_values = {}
 
 # Create input widgets for each feature
-input_values = {}
 for feature in feature_names:
-    # Determine the input type based on the feature data type
-    if pd.api.types.is_numeric_dtype(X_train[feature]):
-        input_values[feature] = st.number_input(feature, value=X_train[feature].mean()) # Default to mean
+    if feature in ['cap-shape', 'cap-color', 'bruises', 'odor']:  # Example categorical features
+        unique_values = ['b', 'e', 's']  # Replace with actual unique values from your training set
+        input_values[feature] = st.selectbox(f"{feature} (categorical)", unique_values)
     else:
-        # If categorical, provide options
-        unique_values = X_train[feature].unique()
-        input_values[feature] = st.selectbox(feature, unique_values)
-
+        input_values[feature] = st.number_input(f"{feature} (numeric)", value=0.0)
 
 # Prediction button
 if st.button('Predict'):
     # Create input data for prediction
     input_data = pd.DataFrame([input_values])
 
-    # Make prediction using the model
+    # Feature scaling if necessary (e.g., standardization)
+    # If you trained with scaling, do the same here
+    # scaler = StandardScaler()
+    # input_data_scaled = scaler.transform(input_data)
+
+    # Make prediction using the model (this is just a placeholder for actual model)
     prediction = rf.predict(input_data)[0]
 
     # Display the prediction
