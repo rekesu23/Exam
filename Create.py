@@ -90,7 +90,7 @@ if pipeline is not None and df is not None:
     input_data = {}
     for feature in feature_names:
         if pd.api.types.is_numeric_dtype(df[feature]):
-            input_data[feature] = st.number_input(f"{feature} (numeric)", value=0.0)
+            input_data[feature] = st.number_input(f"{feature} (numeric)", value=float(df[feature].mean()))
         else:
             unique_values = df[feature].unique()
             input_data[feature] = st.selectbox(f"{feature} (categorical)", unique_values)
@@ -105,13 +105,12 @@ if pipeline is not None and df is not None:
             input_df_processed = pipeline['preprocessor'].transform(input_df)
 
             # Make prediction
-            prediction = pipeline.predict(input_df_processed)[0]
+            prediction = pipeline['classifier'].predict(input_df_processed)[0]
 
             # Display prediction result
             prediction_label = "Edible" if prediction == 0 else "Poisonous"
             st.write(f"Prediction: The mushroom is **{prediction_label}**.")
         except Exception as e:
             st.error(f"Prediction Error: {e}")
-
 else:
     st.warning("Please upload a CSV file to train the model before making a prediction.")
