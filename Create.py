@@ -56,27 +56,39 @@ st.title("Mushroom Classification App")
 
 uploaded_file = st.file_uploader("Choose a mushrooms.csv file", type="csv")
 
-# Initialize pipeline outside the 'if' block
-pipeline = None  # Initialize pipeline to None
+pipeline = None  # Initialize pipeline outside the if block
 
 if uploaded_file is not None:
     try:
-        # ... (your file reading and preprocessing code) ...
-        pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file)
-
-        # ... (rest of your code to display results) ...
+        df = pd.read_csv(uploaded_file)
+        if df.empty:
+            st.error("Error: Uploaded CSV file is empty.")
+        else:
+            # ... (preprocessing and model loading) ...
+            pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file)
+            # ... (displaying results) ...
 
     except Exception as e:
         st.error(f"An error occurred during data processing: {e}")
 
-
-#Prediction section - access pipeline here
+#Prediction section
 st.subheader("Make a Prediction")
-if pipeline is not None: #Check if pipeline exists before proceeding
-    # ... (your code to get feature names and create input widgets) ...
+input_data = {} # Define input_data outside the if block
+
+if pipeline is not None:
+    feature_names = df.columns.tolist()
+    feature_names.remove('class')
+
+    for feature in feature_names:
+        if pd.api.types.is_numeric_dtype(df[feature]):
+            input_data[feature] = st.number_input(f"{feature} (numeric)", value=0.0)
+        else:
+            unique_values = df[feature].unique()
+            input_data[feature] = st.selectbox(f"{feature} (categorical)", unique_values)
+
 
     if st.button("Predict"):
-        input_df = pd.DataFrame([input_data])
+        input_df = pd.DataFrame([input_data])  #Now input_data is defined
         try:
             prediction = pipeline.predict(input_df)[0]
             st.write(f"Prediction: {prediction}")
