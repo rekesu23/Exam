@@ -56,36 +56,26 @@ st.title("Mushroom Classification App")
 
 uploaded_file = st.file_uploader("Choose a mushrooms.csv file", type="csv")
 
+pipeline = None
+df = None
+
 if uploaded_file is not None:
     try:
-        # Load and preprocess data
-        pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file)
+        df = pd.read_csv(uploaded_file)
+        df['class'] = df['class'].map({'e': 0, 'p': 1})
+        pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file, df)
 
-        # Display model performance
-        st.subheader("Model Performance")
-        st.write(f"Accuracy: {accuracy:.4f}")
+        if pipeline is not None:
+            st.subheader("Model Performance")
+            st.write(f"Accuracy: {accuracy:.4f}")
+            # ... (display results) ...
 
-        st.subheader("Confusion Matrix")
-        st.write(cm)
-        plt.figure(figsize=(8, 6))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-        plt.xlabel('Predicted')
-        plt.ylabel('Actual')
-        st.pyplot(plt)
-
-        st.subheader("ROC Curve")
-        plt.figure(figsize=(8, 6))
-        plt.plot(fpr, tpr, label=f'Random Forest (area = {roc_auc:.2f})')
-        plt.plot([0, 1], [0, 1], 'k--')
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve')
-        plt.legend(loc='lower right')
-        st.pyplot(plt)
+    except Exception as e:
+        st.error(f"An error occurred during data processing: {e}")
 
 
         # Prediction section
-st.subheader("Make a Prediction")
+st.subheader("Make a Prediction") 
 input_data = {}
 
 if pipeline is not None and df is not None:
