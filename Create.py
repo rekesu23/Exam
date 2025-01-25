@@ -56,41 +56,31 @@ st.title("Mushroom Classification App")
 
 uploaded_file = st.file_uploader("Choose a mushrooms.csv file", type="csv")
 
+# Initialize pipeline outside the 'if' block
+pipeline = None  # Initialize pipeline to None
+
 if uploaded_file is not None:
     try:
-        df = pd.read_csv(uploaded_file)  # Read the CSV directly
+        # ... (your file reading and preprocessing code) ...
+        pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file)
 
-        #Check for empty file
-        if df.empty:
-            st.error("Error: Uploaded CSV file is empty.")
-        else:
-            # Dynamically get feature names.  This is crucial!
-            feature_names = df.columns.tolist()
-            feature_names.remove('class') #Remove target column
+        # ... (rest of your code to display results) ...
 
-            # ... (rest of your preprocessing and model loading) ...
-
-            st.subheader("Make a Prediction")
-            input_data = {}
-            for feature in feature_names:
-                if pd.api.types.is_numeric_dtype(df[feature]):
-                    input_data[feature] = st.number_input(f"{feature} (numeric)", value=0.0)
-                else:  #Handle categorical features
-                    unique_values = df[feature].unique()
-                    input_data[feature] = st.selectbox(f"{feature} (categorical)", unique_values)
-
-            if st.button("Predict"):
-                input_df = pd.DataFrame([input_data])
-                try:
-                    prediction = pipeline.predict(input_df)[0]
-                    st.write(f"Prediction: {prediction}")
-                except Exception as e:
-                    st.error(f"Prediction Error: {e}")
-
-    except pd.errors.EmptyDataError:
-        st.error("Error: Uploaded CSV file is empty or corrupted.")
     except Exception as e:
-        st.error(f"An error occurred: {e}")
+        st.error(f"An error occurred during data processing: {e}")
 
+
+#Prediction section - access pipeline here
+st.subheader("Make a Prediction")
+if pipeline is not None: #Check if pipeline exists before proceeding
+    # ... (your code to get feature names and create input widgets) ...
+
+    if st.button("Predict"):
+        input_df = pd.DataFrame([input_data])
+        try:
+            prediction = pipeline.predict(input_df)[0]
+            st.write(f"Prediction: {prediction}")
+        except Exception as e:
+            st.error(f"Prediction Error: {e}")
 else:
-    st.info("Awaiting for mushrooms.csv file to be uploaded.")
+    st.warning("Please upload a CSV file to train the model before making a prediction.")
