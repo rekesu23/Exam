@@ -25,6 +25,7 @@ def load_and_preprocess_data(df):
                 ('num', StandardScaler(), X.select_dtypes(include=np.number).columns),
                 ('cat', OneHotEncoder(), X.select_dtypes(include=['object', 'category']).columns)
             ])
+        print(preprocessor)
 
         # Create a pipeline with preprocessing and model - This is now inside try
         pipeline = Pipeline([
