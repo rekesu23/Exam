@@ -100,6 +100,3 @@ if pipeline is not None and df is not None:
             st.error(f"Prediction Error: {e}")
 else:
     st.warning("Please upload a CSV file to train the model before making a prediction.")
-
-            input_df_processed = pipeline['preprocessor'].transform(input_df)
-            prediction = pipeline.predict(input_df_processed)[0]
