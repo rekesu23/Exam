@@ -9,14 +9,16 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, roc_curve, auc
 import matplotlib.pyplot as plt
 import seaborn as sns
-import joblib #for saving and loading model
+import joblib
 
 # --- Data Loading and Preprocessing ---
-@st.cache_data  # Cache data for faster loading on subsequent runs
+@st.cache_data
 def load_and_preprocess_data(filepath):
     df = pd.read_csv(filepath)
 
-    # Separate features (X) and target (y)
+    #Convert target variable to numerical:  Crucial change here!
+    df['class'] = df['class'].map({'e': 0, 'p': 1}) #'e'=edible, 'p'=poisonous
+
     X = df.drop(columns=['class'])
     y = df['class']
 
