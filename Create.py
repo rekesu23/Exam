@@ -16,13 +16,14 @@ import joblib
 def load_and_preprocess_data(filepath):
     try:
         df = pd.read_csv(filepath)
-        print("DataFrame shape after reading:", df.shape)  #Added print statement
-        print("DataFrame head:", df.head()) #Added print statement
-        # ... (rest of your preprocessing code) ...
+        print("DataFrame shape:", df.shape)
+        print("Column names:", df.columns)
+        X = df.drop(columns=['class'])
+        y = df['class'].map({'e': 0, 'p': 1})  #Convert to numerical
+        return X, y #Return X and y directly
     except Exception as e:
-        print(f"Error during data processing: {e}") #Added print statement
-        return None, None, None, None, None, None #Return None if error occurs
-
+        print(f"Error: {e}")
+        return None, None
 
 # --- Streamlit App ---
 st.title("Mushroom Classification App")
