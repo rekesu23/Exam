@@ -91,14 +91,16 @@ if pipeline is not None and df is not None:
             unique_values = df[feature].unique()
             input_data[feature] = st.selectbox(f"{feature} (categorical)", unique_values)
 
-    if st.button("Predict"):
+        if st.button("Predict"):
         input_df = pd.DataFrame([input_data])
         try:
-            # PREPROCESS THE INPUT DATA BEFORE PREDICTION!!!
-            input_df_processed = pipeline['preprocessor'].transform(input_df)
-            prediction = pipeline.predict(input_df_processed)[0] #Predict on processed data
+            # Crucial change: Apply the preprocessor to the input data
+            input_df_processed = pipeline['preprocessor'].transform(input_df) 
+            prediction = pipeline.predict(input_df_processed)[0]
             st.write(f"Prediction: {prediction}")
+        except ValueError as e:  #Catch ValueError specifically
+            st.error(f"Prediction Error: {e}") #More specific error message
         except Exception as e:
-            st.error(f"Prediction Error: {e}")
+            st.error(f"An unexpected error occurred during prediction: {e}")
 else:
     st.warning("Please upload a CSV file to train the model before making a prediction.")
