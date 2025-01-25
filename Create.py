@@ -91,7 +91,7 @@ if pipeline is not None and df is not None:
             unique_values = df[feature].unique()
             input_data[feature] = st.selectbox(f"{feature} (categorical)", unique_values)
 
-        if st.button("Predict"):  # Line 94
+        if st.button("Predict", key="my_unique_predict_button"):
             input_df = pd.DataFrame([input_data])  # Line 95 - Indented correctly now
             try:
                 input_df_processed = pipeline['preprocessor'].transform(input_df)
