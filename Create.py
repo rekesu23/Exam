@@ -58,64 +58,37 @@ uploaded_file = st.file_uploader("Choose a mushrooms.csv file", type="csv")
 
 if uploaded_file is not None:
     try:
-        # Load and preprocess data
-        pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file)
+        df = pd.read_csv(uploaded_file)  # Read the CSV directly
 
-        # Display model performance
-        st.subheader("Model Performance")
-        st.write(f"Accuracy: {accuracy:.4f}")
+        #Check for empty file
+        if df.empty:
+            st.error("Error: Uploaded CSV file is empty.")
+        else:
+            # Dynamically get feature names.  This is crucial!
+            feature_names = df.columns.tolist()
+            feature_names.remove('class') #Remove target column
 
-        st.subheader("Confusion Matrix")
-        st.write(cm)
-        plt.figure(figsize=(8, 6))
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-        plt.xlabel('Predicted')
-        plt.ylabel('Actual')
-        st.pyplot(plt)
+            # ... (rest of your preprocessing and model loading) ...
 
-        st.subheader("ROC Curve")
-        plt.figure(figsize=(8, 6))
-        plt.plot(fpr, tpr, label=f'Random Forest (area = {roc_auc:.2f})')
-        plt.plot([0, 1], [0, 1], 'k--')
-        plt.xlabel('False Positive Rate')
-        plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve')
-        plt.legend(loc='lower right')
-        st.pyplot(plt)
+            st.subheader("Make a Prediction")
+            input_data = {}
+            for feature in feature_names:
+                if pd.api.types.is_numeric_dtype(df[feature]):
+                    input_data[feature] = st.number_input(f"{feature} (numeric)", value=0.0)
+                else:  #Handle categorical features
+                    unique_values = df[feature].unique()
+                    input_data[feature] = st.selectbox(f"{feature} (categorical)", unique_values)
 
+            if st.button("Predict"):
+                input_df = pd.DataFrame([input_data])
+                try:
+                    prediction = pipeline.predict(input_df)[0]
+                    st.write(f"Prediction: {prediction}")
+                except Exception as e:
+                    st.error(f"Prediction Error: {e}")
 
-        #Prediction Section
-        st.subheader("Make a Prediction")
-        #Get Feature Names (this needs adjustment based on your data)
-        feature_names = list(pd.read_csv(uploaded_file).columns)
-        feature_names.remove('class')
-        input_data = {}
-        for feature in feature_names:
-            if pd.read_csv(uploaded_file)[feature].dtype == 'object':
-                unique_values = pd.read_csv(uploaded_file)[feature].unique()
-                input_data[feature] = st.selectbox(f"{feature} (categorical)", unique_values)
-            else:
-                input_data[feature] = st.number_input(f"{feature} (numeric)", value=0.0)
-
-
-        if st.button("Predict"):
-            input_df = pd.DataFrame([input_data])
-            prediction = pipeline.predict(input_df)[0]
-            st.write(f"Prediction: {prediction}")
-
-        #Save and Load Model Section
-        if st.button("Save Model"):
-            joblib.dump(pipeline, 'mushroom_model.pkl')
-            st.write("Model saved as mushroom_model.pkl")
-
-        if st.button("Load Model"):
-            try:
-                loaded_pipeline = joblib.load('mushroom_model.pkl')
-                st.write("Model loaded successfully!")
-                # You can use the loaded_pipeline for prediction here, if needed.
-            except FileNotFoundError:
-                st.write("Model file not found. Please save a model first.")
-
+    except pd.errors.EmptyDataError:
+        st.error("Error: Uploaded CSV file is empty or corrupted.")
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
