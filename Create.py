@@ -39,8 +39,7 @@ if uploaded_file is not None:
     try:
         pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file)
 
-    if pipeline is None:  #Check for errors in preprocessing
-        st.error("An error occurred during data processing.  See console for details.")
+    
     else:
             # ... (preprocessing and model loading) ...
             pipeline, accuracy, cm, fpr, tpr, roc_auc = load_and_preprocess_data(uploaded_file)
