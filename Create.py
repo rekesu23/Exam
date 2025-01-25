@@ -13,9 +13,8 @@ import joblib
 
 # --- Data Loading and Preprocessing ---
 @st.cache_data
-def load_and_preprocess_data(filepath):
+def load_and_preprocess_data(filepath, df):
     try:
-        df = pd.read_csv(filepath)
         # ... (your preprocessing code) ...
         pipeline.fit(X_train, y_train)
         y_pred = pipeline.predict(X_test)
@@ -26,7 +25,8 @@ def load_and_preprocess_data(filepath):
         return pipeline, accuracy, cm, fpr, tpr, roc_auc
     except Exception as e:
         print(f"Error in load_and_preprocess_data: {e}")
-        return None, None, None, None, None, None #Return None for all values if error
+        st.error(f"An error occurred during data processing: {e}") #Report error in streamlit
+        return None, None, None, None, None, None  # Return None for all values if error
 
 # --- Streamlit App ---
 st.title("Mushroom Classification App")
